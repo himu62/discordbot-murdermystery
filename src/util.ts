@@ -1,4 +1,5 @@
 import {
+  ActionRowBuilder,
   CategoryChannel,
   Channel,
   ChannelType,
@@ -6,6 +7,7 @@ import {
   OverwriteResolvable,
   PermissionsBitField,
   Role,
+  StringSelectMenuBuilder,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
@@ -130,6 +132,7 @@ interface createTemplateInput {
   shortName: string;
   characterNames: string[];
   commonVoiceChannelNames: string[];
+  scenes: string[];
   prefix: string;
 }
 
@@ -140,6 +143,11 @@ interface createTemplateOutput {
   voiceChannels: Map<string, VoiceChannel>;
 }
 
+/**
+ * 観戦/PL/キャラクターロールの作成、一般/共通情報/観戦/キャラクター/gm管理チャンネルの作成、ボイスチャンネルの作成
+ * @param guild
+ * @param input
+ */
 export const createTemplate = async (
   guild: Guild,
   input: createTemplateInput
@@ -220,15 +228,6 @@ export const createTemplate = async (
       );
     })
   );
-  textChannels.set(
-    "gm管理",
-    await guild.channels.create({
-      name: "gm管理",
-      parent: category,
-      type: ChannelType.GuildText,
-      permissionOverwrites: [noPermission(guild.roles.everyone.id)],
-    })
-  );
 
   const voiceChannels = new Map<string, VoiceChannel>();
   await Promise.all(
@@ -248,6 +247,30 @@ export const createTemplate = async (
       );
     })
   );
+
+  const gmChannel = await guild.channels.create({
+    name: "gm管理",
+    parent: category,
+    type: ChannelType.GuildText,
+    permissionOverwrites: [noPermission(guild.roles.everyone.id)],
+  });
+  textChannels.set("gm管理", gmChannel);
+  await gmChannel.send({
+    content: "シーン切り替え",
+    components: [
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(
+            `scene\\${input.scenarioName}\\${category.id}\\${input.prefix}`
+          )
+          .addOptions(
+            input.scenes.map((scene) => {
+              return { label: scene, value: scene };
+            })
+          )
+      ),
+    ],
+  });
 
   return {
     category,

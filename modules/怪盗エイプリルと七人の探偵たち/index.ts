@@ -1,10 +1,9 @@
+import { join } from "node:path";
 import {
-  ActionRowBuilder,
   CategoryChannel,
   ChannelType,
   Guild,
   Role,
-  StringSelectMenuBuilder,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
@@ -54,11 +53,11 @@ const characterNames = [
 const voiceChannelNames = ["エントランス", "秋の間", "冬の間", "春の間"];
 
 export class Scenario {
-  private guild: Guild;
-  private category: CategoryChannel;
-  private roles: Map<string, Role>;
-  private textChannels: Map<string, TextChannel>;
-  private voiceChannels: Map<string, VoiceChannel>;
+  guild: Guild;
+  category: CategoryChannel;
+  roles: Map<string, Role>;
+  textChannels: Map<string, TextChannel>;
+  voiceChannels: Map<string, VoiceChannel>;
 
   constructor(
     guild: Guild,
@@ -81,6 +80,7 @@ export class Scenario {
         shortName: "エイプリル",
         characterNames: characterNames,
         commonVoiceChannelNames: voiceChannelNames,
+        scenes,
         prefix,
       });
 
@@ -126,28 +126,6 @@ export class Scenario {
         ],
       })
     );
-
-    // GM管理にシーン切り替え投げる
-    const gmChannel = textChannels.get("gm管理");
-    if (!gmChannel) {
-      return Promise.reject("gm管理チャンネルの取得に失敗しました");
-    }
-    await gmChannel.send({
-      content: "シーン切り替え",
-      components: [
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(
-              `scene\\怪盗エイプリルと七人の探偵たち\\${category.id}\\${prefix}`
-            )
-            .addOptions(
-              scenes.map((scene) => {
-                return { label: scene, value: scene };
-              })
-            )
-        ),
-      ],
-    });
 
     return new Scenario(guild, category, roles, textChannels, voiceChannels);
   }
@@ -214,8 +192,8 @@ export class Scenario {
     return new Scenario(guild, category, roles, textChannels, voiceChannels);
   }
 
-  async scene(scene: string): Promise<void> {
-    if (scene === "事前") {
+  async scene(_scene: string): Promise<void> {
+    if (_scene === "事前") {
       const generalChannel = this.textChannels.get("一般");
       if (!generalChannel)
         return Promise.reject("一般チャンネルの取得に失敗しました");
@@ -226,7 +204,7 @@ export class Scenario {
       await generalChannel.send("https://booth.pm/ja/items/4058480");
       await commonInfoChannel.send({
         content: "キャラクター",
-        files: [__dirname + "/files/0_character.pdf"],
+        files: [join(__dirname, "/files/0_character.pdf")],
       });
     }
   }
