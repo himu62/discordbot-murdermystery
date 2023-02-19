@@ -7,14 +7,20 @@ interface Config {
 }
 
 class ConfigClass {
-  private static readonly sourcePath = "./config.json";
   private static _instance: Config;
 
   public static get instance(): Config {
     if (!this._instance) {
-      this._instance = JSON.parse(
-        fs.readFileSync(this.sourcePath).toString()
-      ) as Config;
+      const env = process.env.NODE_ENV;
+      if (env !== undefined && fs.existsSync(`./config.${env}.json`)) {
+        this._instance = JSON.parse(
+          fs.readFileSync(`./config.${env}.json`).toString()
+        ) as Config;
+      } else {
+        this._instance = JSON.parse(
+          fs.readFileSync("./config.json").toString()
+        ) as Config;
+      }
     }
     return this._instance;
   }
