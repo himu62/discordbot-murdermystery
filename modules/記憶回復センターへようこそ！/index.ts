@@ -6,29 +6,18 @@ import {
   TextChannel,
   VoiceChannel,
 } from "discord.js";
-import {
-  createTemplate,
-  getCategory,
-  getChannel,
-  getRole,
-  noPermission,
-  readonlyPermission,
-} from "../../src/util";
+import { noPermission, readonlyPermission } from "../../src/util";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { AScenario } from "../../src/module";
 
+const scenarioName = "記憶回復センターへようこそ！";
+const shortName = "記憶回復";
 const characterNames = ["ヒダマリ", "フシグモ", "ミン"];
 const voiceChannelNames = ["休憩室"];
-
 const scenes = ["事前", "導入", "ルール", "休憩＋記憶回復", "質問", "解説"];
 
-export class Scenario {
-  guild: Guild;
-  category: CategoryChannel;
-  roles: Map<string, Role>;
-  textChannels: Map<string, TextChannel>;
-  voiceChannels: Map<string, VoiceChannel>;
-
+export class Scenario extends AScenario {
   constructor(
     guild: Guild,
     category: CategoryChannel,
@@ -36,26 +25,30 @@ export class Scenario {
     textChannels: Map<string, TextChannel>,
     voiceChannels: Map<string, VoiceChannel>
   ) {
-    this.guild = guild;
-    this.category = category;
-    this.roles = roles;
-    this.textChannels = textChannels;
-    this.voiceChannels = voiceChannels;
+    super({
+      scenarioName,
+      shortName,
+      characterNames,
+      voiceChannelNames,
+      scenes,
+      guild,
+      category,
+      roles,
+      textChannels,
+      voiceChannels,
+    });
   }
 
   static async init(guild: Guild, prefix: string): Promise<Scenario> {
-    const { category, roles, textChannels, voiceChannels } =
-      await createTemplate(guild, {
-        characterNames: characterNames,
-        commonVoiceChannelNames: voiceChannelNames,
+    const { category, roles, textChannels, voiceChannels, audienceRole } =
+      await super._init(guild, {
+        scenarioName,
+        shortName,
+        characterNames,
+        voiceChannelNames,
         scenes,
         prefix,
-        scenarioName: "記憶回復センターへようこそ！",
-        shortName: "記憶回復",
       });
-
-    const audienceRole = roles.get("観戦");
-    if (!audienceRole) return Promise.reject("観戦ロールの取得に失敗しました");
 
     await guild.channels.create({
       name: "解説",
@@ -84,60 +77,24 @@ export class Scenario {
     categoryId: string,
     prefix: string
   ): Promise<Scenario> {
-    const category = getCategory(
+    return super._get<Scenario>(Scenario, {
       guild,
-      `${prefix}-記憶回復センターへようこそ！`
-    );
-    if (!category) return Promise.reject("カテゴリの取得に失敗しました");
-
-    const roles = new Map<string, Role>();
-    for (const name of characterNames) {
-      const role = getRole(guild, `${prefix}${name}`);
-      if (!role)
-        return Promise.reject(`${prefix}${name}ロールの取得に失敗しました`);
-      roles.set(name, role);
-    }
-    const audienceRole = getRole(guild, "記憶回復観戦");
-    if (!audienceRole) return Promise.reject("観戦ロールの取得に失敗しました");
-    const playersRole = getRole(guild, `${prefix}記憶回復PL`);
-    if (!playersRole) return Promise.reject("PLロールの取得に失敗しました");
-    roles.set("観戦", audienceRole);
-    roles.set("PL", playersRole);
-
-    const textChannels = new Map<string, TextChannel>();
-    for (const name of characterNames.concat([
-      "一般",
-      "共通情報",
-      "観戦",
-      "解説",
-      "エンドカード",
-      "gm管理",
-    ])) {
-      const channel = getChannel(
-        category,
-        name,
-        ChannelType.GuildText
-      ) as TextChannel;
-      if (!channel)
-        return Promise.reject(
-          `テキストチャンネル"${name}"の取得に失敗しました`
-        );
-      textChannels.set(name, channel);
-    }
-
-    const voiceChannels = new Map<string, VoiceChannel>();
-    for (const name of voiceChannelNames) {
-      const channel = getChannel(
-        category,
-        name,
-        ChannelType.GuildVoice
-      ) as VoiceChannel;
-      if (!channel)
-        return Promise.reject(`ボイスチャンネル"${name}"の取得に失敗しました`);
-      voiceChannels.set(name, channel);
-    }
-
-    return new Scenario(guild, category, roles, textChannels, voiceChannels);
+      categoryId,
+      prefix,
+      scenarioName,
+      shortName,
+      characterNames,
+      scenes,
+      textChannelNames: [
+        "一般",
+        "共通情報",
+        "観戦",
+        "解説",
+        "エンドカード",
+        "gm管理",
+      ],
+      voiceChannelNames,
+    });
   }
 
   async scene(_scene: string): Promise<void> {

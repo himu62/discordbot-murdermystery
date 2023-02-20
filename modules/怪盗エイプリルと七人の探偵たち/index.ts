@@ -8,15 +8,24 @@ import {
   VoiceChannel,
 } from "discord.js";
 import {
-  createTemplate,
-  getCategory,
-  getChannel,
-  getRole,
   noPermission,
   readonlyPermission,
   writerPermission,
 } from "../../src/util";
+import { AScenario } from "../../src/module";
 
+const scenarioName = "怪盗エイプリルと七人の探偵たち";
+const shortName = "エイプリル";
+const characterNames = [
+  "真木沼矢文",
+  "秋葉原ミカヅキ",
+  "稔堂自然",
+  "四月総介",
+  "葛城御道",
+  "奥座敷怜悧",
+  "奥座敷道楽",
+];
+const voiceChannelNames = ["エントランス", "秋の間", "冬の間", "春の間"];
 const scenes = [
   "事前",
   "プロローグ",
@@ -40,25 +49,7 @@ const scenes = [
   "感想戦",
 ];
 
-const characterNames = [
-  "真木沼矢文",
-  "秋葉原ミカヅキ",
-  "稔堂自然",
-  "四月総介",
-  "葛城御道",
-  "奥座敷怜悧",
-  "奥座敷道楽",
-];
-
-const voiceChannelNames = ["エントランス", "秋の間", "冬の間", "春の間"];
-
-export class Scenario {
-  guild: Guild;
-  category: CategoryChannel;
-  roles: Map<string, Role>;
-  textChannels: Map<string, TextChannel>;
-  voiceChannels: Map<string, VoiceChannel>;
-
+export class Scenario extends AScenario {
   constructor(
     guild: Guild,
     category: CategoryChannel,
@@ -66,28 +57,34 @@ export class Scenario {
     textChannels: Map<string, TextChannel>,
     voiceChannels: Map<string, VoiceChannel>
   ) {
-    this.guild = guild;
-    this.category = category;
-    this.roles = roles;
-    this.textChannels = textChannels;
-    this.voiceChannels = voiceChannels;
+    super({
+      scenarioName,
+      shortName,
+      characterNames,
+      voiceChannelNames,
+      scenes,
+      guild,
+      category,
+      roles,
+      textChannels,
+      voiceChannels,
+    });
   }
 
   static async init(guild: Guild, prefix: string): Promise<Scenario> {
-    const { category, roles, textChannels, voiceChannels } =
-      await createTemplate(guild, {
-        scenarioName: "怪盗エイプリルと七人の探偵たち",
-        shortName: "エイプリル",
-        characterNames: characterNames,
-        commonVoiceChannelNames: voiceChannelNames,
+    const { category, roles, textChannels, voiceChannels, audienceRole } =
+      await super._init(guild, {
+        scenarioName,
+        shortName,
+        characterNames,
+        voiceChannelNames,
         scenes,
         prefix,
       });
 
     const dourakuRole = roles.get("奥座敷道楽");
-    const audienceRole = roles.get("観戦");
-    if (!dourakuRole || !audienceRole) {
-      return Promise.reject("道楽ロールまたは観戦ロールの取得に失敗しました");
+    if (!dourakuRole) {
+      return Promise.reject("道楽ロールの取得に失敗しました");
     }
     textChannels.set(
       "道楽調査",
@@ -135,61 +132,25 @@ export class Scenario {
     categoryId: string,
     prefix: string
   ): Promise<Scenario> {
-    const category = getCategory(
+    return super._get<Scenario>(Scenario, {
       guild,
-      `${prefix}-怪盗エイプリルと七人の探偵たち`
-    );
-    if (!category) return Promise.reject("カテゴリの取得に失敗しました");
-
-    const roles = new Map<string, Role>();
-    for (const name of characterNames) {
-      const role = getRole(guild, `${prefix}${name}`);
-      if (!role)
-        return Promise.reject(`${prefix}${name}ロールの取得に失敗しました`);
-      roles.set(name, role);
-    }
-    const audienceRole = getRole(guild, "エイプリル観戦");
-    if (!audienceRole) return Promise.reject("観戦ロールの取得に失敗しました");
-    const playersRole = getRole(guild, `${prefix}エイプリルPL`);
-    if (!playersRole) return Promise.reject("PLロールの取得に失敗しました");
-    roles.set("観戦", audienceRole);
-    roles.set("PL", playersRole);
-
-    const textChannels = new Map<string, TextChannel>();
-    for (const name of characterNames.concat([
-      "一般",
-      "共通情報",
-      "観戦",
-      "エンディング",
-      "解説",
-      "道楽調査",
-      "gm管理",
-    ])) {
-      const channel = getChannel(
-        category,
-        name,
-        ChannelType.GuildText
-      ) as TextChannel;
-      if (!channel)
-        return Promise.reject(
-          `テキストチャンネル"${name}"の取得に失敗しました`
-        );
-      textChannels.set(name, channel);
-    }
-
-    const voiceChannels = new Map<string, VoiceChannel>();
-    for (const name of voiceChannelNames) {
-      const channel = getChannel(
-        category,
-        name,
-        ChannelType.GuildVoice
-      ) as VoiceChannel;
-      if (!channel)
-        return Promise.reject(`ボイスチャンネル"${name}"の取得に失敗しました`);
-      voiceChannels.set(name, channel);
-    }
-
-    return new Scenario(guild, category, roles, textChannels, voiceChannels);
+      categoryId,
+      prefix,
+      scenarioName,
+      shortName,
+      characterNames,
+      scenes,
+      textChannelNames: [
+        "一般",
+        "共通情報",
+        "観戦",
+        "エンディング",
+        "解説",
+        "道楽調査",
+        "gm管理",
+      ],
+      voiceChannelNames,
+    });
   }
 
   async scene(_scene: string): Promise<void> {
