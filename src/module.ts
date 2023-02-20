@@ -333,4 +333,9 @@ export class AScenario {
 
     return new type(input.guild, category, roles, textChannels, voiceChannels);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async scene(_scene: string): Promise<void> {
+    return Promise.resolve();
+  }
 }
