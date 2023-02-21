@@ -1,4 +1,3 @@
-import { AScenario } from "../../src/module";
 import {
   CategoryChannel,
   Guild,
@@ -6,6 +5,10 @@ import {
   TextChannel,
   VoiceChannel,
 } from "discord.js";
+import { AScenario } from "../../src/module";
+import { FILE } from "../../src/util";
+
+const file = FILE(__dirname);
 
 const scenarioName = "";
 const shortName = "";

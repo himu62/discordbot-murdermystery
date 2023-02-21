@@ -7,13 +7,15 @@ import {
   VoiceChannel,
 } from "discord.js";
 import {
+  FILE,
   noPermission,
   readonlyPermission,
   sendInfoToIndividualChannel,
 } from "../../src/util";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { AScenario } from "../../src/module";
+
+const file = FILE(__dirname);
 
 const scenarioName = "記憶回復センターへようこそ！";
 const shortName = "記憶回復";
@@ -107,26 +109,26 @@ export class Scenario extends AScenario {
     if (_scene === "事前") {
       await chCommonInfo.send({
         content: "キャラクター",
-        files: [join(__dirname, "/files/0_kyara.pdf")],
+        files: [file("0_kyara.pdf")],
       });
 
       const chExplain = await this.getTextChannel("解説");
       await chExplain.send({
         content: "真相解説",
-        files: [join(__dirname, "/files/shinso.pdf")],
+        files: [file("shinso.pdf")],
       });
       await chExplain.send({
         content: "もっと真相解説",
-        files: [join(__dirname, "/files/dasoku.pdf")],
+        files: [file("dasoku.pdf")],
       });
 
       const chEndCard = await this.getTextChannel("エンドカード");
       await chEndCard.send({
         files: [
-          join(__dirname, "/files/GM.png"),
-          join(__dirname, "/files/HIDAMARI.png"),
-          join(__dirname, "/files/FUSHIGUMO.png"),
-          join(__dirname, "/files/MINN.png"),
+          file("GM.png"),
+          file("HIDAMARI.png"),
+          file("FUSHIGUMO.png"),
+          file("MINN.png"),
         ],
       });
       await chEndCard.send({
@@ -143,16 +145,14 @@ export class Scenario extends AScenario {
     } else if (_scene === "導入") {
       await chCommonInfo.send({
         content: "導入",
-        files: [join(__dirname, "/files/1_donyu.pdf")],
+        files: [file("1_donyu.pdf")],
       });
     } else if (_scene === "ルール") {
-      const hosoku = readFileSync(
-        join(__dirname, "/files/2_ruru_hosoku.txt")
-      ).toString();
+      const hosoku = readFileSync(file("2_ruru_hosoku.txt")).toString();
 
       await chCommonInfo.send({
         content: "ルール",
-        files: [join(__dirname, "/files/2_ruru.pdf")],
+        files: [file("2_ruru.pdf")],
       });
       await chCommonInfo.send({
         content: hosoku,
@@ -163,7 +163,7 @@ export class Scenario extends AScenario {
           const ch = await this.getTextChannel(chara);
           await ch.send({
             content: "休憩回復フェーズ",
-            files: [join(__dirname, "/files/3_kyukei.kaihuku.pdf")],
+            files: [file("3_kyukei.kaihuku.pdf")],
           });
           return ch.send({
             content:
