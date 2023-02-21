@@ -168,7 +168,7 @@ export class Scenario extends AScenario {
             content: "休憩回復フェーズ",
             files: [join(__dirname, "/files/3_kyukei.kaihuku.pdf")],
           });
-          await charaChannel.send({
+          return charaChannel.send({
             content:
               "PDFに「個室に移動してから続きを読んでください」とありますが、そのまま読んで問題ありません。",
           });
@@ -190,7 +190,7 @@ export class Scenario extends AScenario {
 
       await Promise.all(
         playersRole.members.map(async (member) => {
-          await member.roles.add(audienceRole);
+          return member.roles.add(audienceRole);
         })
       );
     }
