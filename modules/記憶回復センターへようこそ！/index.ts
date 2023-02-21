@@ -102,7 +102,7 @@ export class Scenario extends AScenario {
   }
 
   async scene(_scene: string): Promise<void> {
-    const chCommonInfo = this.textChannels.get("共通情報");
+    const chCommonInfo = await this.getTextChannel("共通情報");
 
     if (_scene === "事前") {
       await chCommonInfo.send({

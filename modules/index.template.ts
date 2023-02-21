@@ -1,0 +1,77 @@
+import { AScenario } from "../src/module";
+import {
+  CategoryChannel,
+  Guild,
+  Role,
+  TextChannel,
+  VoiceChannel,
+} from "discord.js";
+
+const scenarioName = "";
+const shortName = "";
+const characterNames = [""];
+const voiceChannelNames = [""];
+const scenes = ["事前"];
+
+export class Scenario extends AScenario {
+  constructor(
+    guild: Guild,
+    category: CategoryChannel,
+    roles: Map<string, Role>,
+    textChannels: Map<string, TextChannel>,
+    voiceChannels: Map<string, VoiceChannel>
+  ) {
+    super({
+      scenarioName,
+      shortName,
+      characterNames,
+      voiceChannelNames,
+      scenes,
+      guild,
+      category,
+      roles,
+      textChannels,
+      voiceChannels,
+    });
+  }
+
+  static async init(guild: Guild, prefix: string): Promise<Scenario> {
+    const {
+      category,
+      roles,
+      textChannels,
+      voiceChannels,
+      audienceRole,
+      playersRole,
+    } = await super._init(guild, {
+      scenarioName,
+      shortName,
+      characterNames,
+      voiceChannelNames,
+      scenes,
+      prefix,
+    });
+
+    return new Scenario(guild, category, roles, textChannels, voiceChannels);
+  }
+
+  static async get(
+    guild: Guild,
+    categoryId: string,
+    prefix: string
+  ): Promise<Scenario> {
+    return super._get<Scenario>(Scenario, {
+      guild,
+      categoryId,
+      prefix,
+      scenarioName,
+      shortName,
+      characterNames,
+      scenes,
+      textChannelNames: ["一般", "共通情報", "観戦", "gm管理"],
+      voiceChannelNames,
+    });
+  }
+
+  async scene(_scene: string): Promise<void> {}
+}
