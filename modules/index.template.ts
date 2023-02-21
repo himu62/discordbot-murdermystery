@@ -1,4 +1,4 @@
-import { AScenario } from "../src/module";
+import { AScenario } from "../../src/module";
 import {
   CategoryChannel,
   Guild,
