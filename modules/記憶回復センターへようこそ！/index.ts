@@ -6,7 +6,11 @@ import {
   TextChannel,
   VoiceChannel,
 } from "discord.js";
-import { noPermission, readonlyPermission } from "../../src/util";
+import {
+  noPermission,
+  readonlyPermission,
+  sendInfoToIndividualChannel,
+} from "../../src/util";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AScenario } from "../../src/module";
@@ -98,31 +102,26 @@ export class Scenario extends AScenario {
   }
 
   async scene(_scene: string): Promise<void> {
+    const chCommonInfo = this.textChannels.get("共通情報");
+
     if (_scene === "事前") {
-      const commonInfoChannel = this.textChannels.get("共通情報");
-      if (!commonInfoChannel)
-        return Promise.reject("共通情報チャンネルの取得に失敗しました");
-      await commonInfoChannel.send({
+      await chCommonInfo.send({
         content: "キャラクター",
         files: [join(__dirname, "/files/0_kyara.pdf")],
       });
 
-      const explainChannel = this.textChannels.get("解説");
-      if (!explainChannel)
-        return Promise.reject("解説チャンネルの取得に失敗しました");
-      await explainChannel.send({
+      const chExplain = await this.getTextChannel("解説");
+      await chExplain.send({
         content: "真相解説",
         files: [join(__dirname, "/files/shinso.pdf")],
       });
-      await explainChannel.send({
+      await chExplain.send({
         content: "もっと真相解説",
         files: [join(__dirname, "/files/dasoku.pdf")],
       });
 
-      const endCardChannel = this.textChannels.get("エンドカード");
-      if (!endCardChannel)
-        return Promise.reject("エンドカードチャンネルの取得に失敗しました");
-      await endCardChannel.send({
+      const chEndCard = await this.getTextChannel("エンドカード");
+      await chEndCard.send({
         files: [
           join(__dirname, "/files/GM.png"),
           join(__dirname, "/files/HIDAMARI.png"),
@@ -130,64 +129,55 @@ export class Scenario extends AScenario {
           join(__dirname, "/files/MINN.png"),
         ],
       });
-      await endCardChannel.send({
+      await chEndCard.send({
         content:
           "感想は #記憶回復 をつけて、誰でも見れるふせったーにすると作者さんが喜びます！たぶん。",
       });
+
+      const chCharacters = await Promise.all(
+        characterNames.map(async (chara) => {
+          return this.getTextChannel(chara);
+        })
+      );
+      await sendInfoToIndividualChannel(chCharacters);
     } else if (_scene === "導入") {
-      const commonInfoChannel = this.textChannels.get("共通情報");
-      if (!commonInfoChannel)
-        return Promise.reject("共通情報チャンネルの取得に失敗しました");
-      await commonInfoChannel.send({
+      await chCommonInfo.send({
         content: "導入",
         files: [join(__dirname, "/files/1_donyu.pdf")],
       });
     } else if (_scene === "ルール") {
-      const commonInfoChannel = this.textChannels.get("共通情報");
-      if (!commonInfoChannel)
-        return Promise.reject("共通情報チャンネルの取得に失敗しました");
-
       const hosoku = readFileSync(
         join(__dirname, "/files/2_ruru_hosoku.txt")
       ).toString();
 
-      await commonInfoChannel.send({
+      await chCommonInfo.send({
         content: "ルール",
         files: [join(__dirname, "/files/2_ruru.pdf")],
       });
-      await commonInfoChannel.send({
+      await chCommonInfo.send({
         content: hosoku,
       });
     } else if (_scene === "休憩＋記憶回復") {
       await Promise.all(
         characterNames.map(async (chara) => {
-          const charaChannel = this.textChannels.get(chara);
-          if (!charaChannel)
-            return Promise.reject(`${chara}チャンネルの取得に失敗しました`);
-          await charaChannel.send({
+          const ch = await this.getTextChannel(chara);
+          await ch.send({
             content: "休憩回復フェーズ",
             files: [join(__dirname, "/files/3_kyukei.kaihuku.pdf")],
           });
-          return charaChannel.send({
+          return ch.send({
             content:
               "PDFに「個室に移動してから続きを読んでください」とありますが、そのまま読んで問題ありません。",
           });
         })
       );
     } else if (_scene === "質問") {
-      const commonInfoChannel = this.textChannels.get("共通情報");
-      if (!commonInfoChannel)
-        return Promise.reject("共通情報チャンネルの取得に失敗しました");
-      await commonInfoChannel.send({
-        content: "https://mivsflightlessairship.com/",
+      await chCommonInfo.send({
+        content: "質問フォーム→ https://mivsflightlessairship.com/",
       });
     } else if (_scene === "解説") {
-      const playersRole = this.roles.get("PL");
-      if (!playersRole) return Promise.reject("PLロールの取得に失敗しました");
-      const audienceRole = this.roles.get("観戦");
-      if (!audienceRole)
-        return Promise.reject("観戦ロールの取得に失敗しました");
-
+      const audienceRole = await this.getRole("観戦");
+      const playersRole = await this.getRole("PL");
       await Promise.all(
         playersRole.members.map(async (member) => {
           return member.roles.add(audienceRole);

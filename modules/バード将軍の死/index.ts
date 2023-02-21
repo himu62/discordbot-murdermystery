@@ -221,7 +221,7 @@ export class Scenario extends AScenario {
 
       const chCharacters = await Promise.all(
         characterNames.map(async (chara) => {
-          return await this.getTextChannel(chara);
+          return this.getTextChannel(chara);
         })
       );
       await sendInfoToIndividualChannel(chCharacters);
