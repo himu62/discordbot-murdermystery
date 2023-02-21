@@ -13,6 +13,8 @@ import {
   readonlyPermission,
   sendInfoToIndividualChannel,
 } from "../../src/util";
+import { readFileSync } from "node:fs";
+import { config } from "../../src/config";
 
 const file = FILE(__dirname);
 
@@ -33,6 +35,7 @@ const scenes = [
   "記憶回復・マリン",
   "記憶回復・ドラゴ",
   "記憶回復・リリー",
+  "投票",
   "HOエイダ公開",
   "解説",
 ];
@@ -135,8 +138,8 @@ export class Scenario extends AScenario {
       await chHo4.send({ files: [file("ho4_drago.pdf")] });
       await chHo5.send({ files: [file("ho5_lily.pdf")] });
 
-      const chAda = await this.getTextChannel("エイダ・ローデン");
-      await chAda.send({ files: [file("ho_ada.pdf")] });
+      const chEida = await this.getTextChannel("エイダ・ローデン");
+      await chEida.send({ files: [file("ho_eida.pdf")] });
 
       const chExplain = await this.getTextChannel("解説");
       await chExplain.send({ files: [file("kaisetsu.pdf")] });
@@ -174,6 +177,17 @@ export class Scenario extends AScenario {
         content: "追加HO「失われた記憶」",
         files: [file("ho5_lily_2.pdf")],
       });
+    } else if (_scene === "投票") {
+      const txt = readFileSync(file("投票.txt"))
+        .toString()
+        .replace("@GM", `<@${config.gmUserId}>`);
+
+      await Promise.all(
+        this.characterNames.map(async (chara) => {
+          const ch = await this.getTextChannel(chara);
+          return ch.send({ content: txt });
+        })
+      );
     } else if (_scene === "HOエイダ公開") {
       const ch = await this.getTextChannel("エイダ・ローデン");
       await ch.permissionOverwrites.set([
