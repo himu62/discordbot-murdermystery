@@ -69,18 +69,23 @@ const sceneSelected = async (interaction: Interaction) => {
   if (parsedCustomId.length !== 4 || parsedCustomId[0] !== "scene") return;
 
   await interaction.deferReply({ ephemeral: true });
-  const m = modules.get(parsedCustomId[1]);
-  if (m && interaction.guild) {
-    const s = await m.get(
-      interaction.guild,
-      parsedCustomId[2],
-      parsedCustomId[3]
-    );
-    await s.scene(interaction.values[0]);
+  
+  try {
+    const m = modules.get(parsedCustomId[1]);
+    if (m && interaction.guild) {
+      const s = await m.get(
+          interaction.guild,
+          parsedCustomId[2],
+          parsedCustomId[3]
+      );
+      await s.scene(interaction.values[0]);
+    }
+    await interaction.followUp("done!");
+  } catch (e) {
+    await interaction.followUp(`ERROR!: ${e}`);
   }
-  await interaction.followUp("done!");
-
+  
   setTimeout(() => {
     interaction.deleteReply();
-  }, 5000);
+  }, 10000);
 };
