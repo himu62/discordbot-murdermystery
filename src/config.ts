@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as path from "node:path";
 
 interface Config {
   token: string;
@@ -13,13 +14,14 @@ class ConfigClass {
   public static get instance(): Config {
     if (!this._instance) {
       const env = process.env.NODE_ENV;
-      if (env !== undefined && fs.existsSync(`./config.${env}.json`)) {
+      console.log("NODE_ENV:", env);
+      if (env !== undefined && fs.existsSync(path.join(__dirname, `../config.${env}.json`))) {
         this._instance = JSON.parse(
-          fs.readFileSync(`./config.${env}.json`).toString()
+          fs.readFileSync(path.join(__dirname, `../config.${env}.json`)).toString()
         ) as Config;
       } else {
         this._instance = JSON.parse(
-          fs.readFileSync("./config.json").toString()
+          fs.readFileSync(path.join(__dirname, `../config.json`)).toString()
         ) as Config;
       }
     }
