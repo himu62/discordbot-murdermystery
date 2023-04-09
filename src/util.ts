@@ -136,7 +136,7 @@ export const FILE = (dirname: string) => {
 export const sendInfoToIndividualChannel = async (
   channels: TextChannel[]
 ): Promise<Message[]> => {
-  return await Promise.all(
+  return Promise.all(
     channels.map(async (ch) => {
       return await ch.send({
         content: `=====================================================================
@@ -146,6 +146,7 @@ export const sendInfoToIndividualChannel = async (
 ゲーム終了時、他のプレイヤーに公開されます。
 
 何か聞きたいことがある場合には、 <@${config.gmUserId}> をつけて送ってください。
+（このbotにメンションしてもGMに通知されません。メンション先の間違いに気をつけてください）
 =====================================================================`,
       });
     })

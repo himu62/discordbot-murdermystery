@@ -1,20 +1,8 @@
-import { AScenario } from "../../src/module";
-import {
-  CategoryChannel,
-  ChannelType,
-  Guild,
-  Role,
-  TextChannel,
-  VoiceChannel,
-} from "discord.js";
-import {
-  FILE,
-  noPermission,
-  readonlyPermission,
-  sendInfoToIndividualChannel,
-} from "../../src/util";
-import { readFileSync } from "node:fs";
-import { config } from "../../src/config";
+import {AScenario} from "../../src/module";
+import {CategoryChannel, ChannelType, Guild, Role, TextChannel, VoiceChannel,} from "discord.js";
+import {FILE, noPermission, readonlyPermission, sendInfoToIndividualChannel,} from "../../src/util";
+import {readFileSync} from "node:fs";
+import {config} from "../../src/config";
 
 const file = FILE(__dirname);
 
@@ -63,7 +51,7 @@ export class Scenario extends AScenario {
   }
 
   static async init(guild: Guild, prefix: string): Promise<Scenario> {
-    const { category, roles, textChannels, voiceChannels, audienceRole } =
+    const {category, roles, textChannels, voiceChannels, audienceRole} =
       await super._init(guild, {
         scenarioName,
         shortName,
@@ -115,7 +103,7 @@ export class Scenario extends AScenario {
       shortName,
       characterNames,
       scenes,
-      textChannelNames: ["一般", "観戦", "エイダ・ローデン", "解説", "gm管理"],
+      textChannelNames: ["連絡・雑談", "観戦", "エイダ・ローデン", "解説", "gm管理"],
       voiceChannelNames,
     });
   }
@@ -132,17 +120,17 @@ export class Scenario extends AScenario {
       const chHo5 = await this.getTextChannel("リリー・フローラ");
       await sendInfoToIndividualChannel([chHo1, chHo2, chHo3, chHo4, chHo5]);
 
-      await chHo1.send({ files: [file("ho1_stan.pdf")] });
-      await chHo2.send({ files: [file("ho2_val.pdf")] });
-      await chHo3.send({ files: [file("ho3_marine.pdf")] });
-      await chHo4.send({ files: [file("ho4_drago.pdf")] });
-      await chHo5.send({ files: [file("ho5_lily.pdf")] });
+      await chHo1.send({files: [file("ho1_stan.pdf")]});
+      await chHo2.send({files: [file("ho2_val.pdf")]});
+      await chHo3.send({files: [file("ho3_marine.pdf")]});
+      await chHo4.send({files: [file("ho4_drago.pdf")]});
+      await chHo5.send({files: [file("ho5_lily.pdf")]});
 
       const chEida = await this.getTextChannel("エイダ・ローデン");
-      await chEida.send({ files: [file("ho_eida.pdf")] });
+      await chEida.send({files: [file("ho_eida.pdf")]});
 
       const chExplain = await this.getTextChannel("解説");
-      await chExplain.send({ files: [file("kaisetsu.pdf")] });
+      await chExplain.send({files: [file("kaisetsu.pdf")]});
       await chExplain.send({
         content:
           "・エンドカードはありません。\n・オンセ鯖の通過ロールを付与します。\n・キャラクター名はネタバレ禁止です。",
@@ -181,11 +169,14 @@ export class Scenario extends AScenario {
       const txt = readFileSync(file("投票.txt"))
         .toString()
         .replace("@GM", `<@${config.gmUserId}>`);
+      const txt2 = readFileSync(file("投票2.txt"))
+        .toString()
+        .replace("@GM", `<@${config.gmUserId}>`);
 
       await Promise.all(
-        this.characterNames.map(async (chara) => {
+        [["スタン・ローデン", txt2], ["ヴァル・ドレッド", txt2], ["マリン・アントワーネ", txt], ["ドラゴ・ヴァルスローダ", txt2], ["リリー・フローラ", txt]].map(async ([chara, t]) => {
           const ch = await this.getTextChannel(chara);
-          return ch.send({ content: txt });
+          return ch.send({content: t});
         })
       );
     } else if (_scene === "HOエイダ公開") {

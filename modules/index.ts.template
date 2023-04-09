@@ -71,7 +71,7 @@ export class Scenario extends AScenario {
       shortName,
       characterNames,
       scenes,
-      textChannelNames: ["一般", "共通情報", "観戦", "gm管理"],
+      textChannelNames: ["連絡・雑談", "共通情報", "観戦", "gm管理"],
       voiceChannelNames,
     });
   }

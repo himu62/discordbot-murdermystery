@@ -149,7 +149,7 @@ export class Scenario extends AScenario {
       characterNames,
       scenes,
       textChannelNames: [
-        "一般",
+        "連絡・雑談",
         "共通情報",
         "はじめに",
         "キャラクター",

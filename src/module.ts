@@ -9,14 +9,7 @@ import {
   TextChannel,
   VoiceChannel,
 } from "discord.js";
-import {
-  getCategory,
-  getChannel,
-  getRole,
-  noPermission,
-  readonlyPermission,
-  writerPermission,
-} from "./util";
+import {getCategory, getChannel, getRole, noPermission, readonlyPermission, writerPermission,} from "./util";
 
 export interface IScenario {
   init: (guild: Guild, prefix: string) => Promise<AScenario>;
@@ -32,7 +25,7 @@ class ModuleClass {
   public static get instance(): Modules {
     if (!this._instance) {
       this._instance = new Map<string, IScenario>();
-      fs.readdirSync(this.modulesDir, { withFileTypes: true })
+      fs.readdirSync(this.modulesDir, {withFileTypes: true})
         .filter((dirent) => dirent.isDirectory())
         .forEach((dirent) => {
           import(`.${this.modulesDir}/${dirent.name}`)
@@ -131,7 +124,7 @@ export class AScenario {
     const roles = new Map<string, Role>();
     const audienceRole =
       getRole(guild, `${input.shortName}観戦`) ??
-      (await guild.roles.create({ name: `${input.shortName}観戦` }));
+      (await guild.roles.create({name: `${input.shortName}観戦`}));
     const playersRole = await guild.roles.create({
       name: `${input.prefix}${input.shortName}PL`,
     });
@@ -139,16 +132,16 @@ export class AScenario {
     roles.set("PL", playersRole);
 
     const category = await guild.channels.create({
-      name: `${input.prefix}-${input.scenarioName}`,
+      name: `${input.prefix} ${input.scenarioName}`,
       type: ChannelType.GuildCategory,
       permissionOverwrites: [noPermission(guild.roles.everyone.id)],
     });
 
     const textChannels = new Map<string, TextChannel>();
     textChannels.set(
-      "一般",
+      "連絡・雑談",
       await guild.channels.create({
-        name: "一般",
+        name: "連絡・雑談",
         parent: category,
         type: ChannelType.GuildText,
         permissionOverwrites: [
@@ -241,7 +234,7 @@ export class AScenario {
             )
             .addOptions(
               input.scenes.map((scene) => {
-                return { label: scene, value: scene };
+                return {label: scene, value: scene};
               })
             )
         ),
@@ -260,7 +253,7 @@ export class AScenario {
 
   static async _get<T extends AScenario>(
     type: {
-      new (
+      new(
         guild: Guild,
         category: CategoryChannel,
         roles: Map<string, Role>,
@@ -282,7 +275,7 @@ export class AScenario {
   ): Promise<T> {
     const category = getCategory(
       input.guild,
-      `${input.prefix}-${input.scenarioName}`
+      `${input.prefix} ${input.scenarioName}`
     );
     if (!category) return Promise.reject("カテゴリの取得に失敗しました");
 
@@ -309,7 +302,7 @@ export class AScenario {
     for (const name of input.characterNames.concat(input.textChannelNames)) {
       const channel = getChannel(
         category,
-        name,
+        name.toLowerCase(),
         ChannelType.GuildText
       ) as TextChannel;
       if (!channel)
@@ -323,7 +316,7 @@ export class AScenario {
     for (const name of input.voiceChannelNames) {
       const channel = getChannel(
         category,
-        name,
+        name.toLowerCase(),
         ChannelType.GuildVoice
       ) as VoiceChannel;
       if (!channel)

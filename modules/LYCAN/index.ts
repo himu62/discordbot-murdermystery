@@ -79,7 +79,7 @@ export class Scenario extends AScenario {
       shortName,
       characterNames,
       scenes,
-      textChannelNames: ["一般", "共通情報", "観戦", "解説", "gm管理"],
+      textChannelNames: ["連絡・雑談", "共通情報", "観戦", "解説", "gm管理"],
       voiceChannelNames,
     });
   }
@@ -157,6 +157,7 @@ export class Scenario extends AScenario {
     } else if (_scene === "解説") {
       const audienceRole = await this.getRole("観戦");
       const playersRole = await this.getRole("PL");
+      console.log(playersRole.members);
       await Promise.all(
         playersRole.members.map(async (chara) => {
           return chara.roles.add(audienceRole);

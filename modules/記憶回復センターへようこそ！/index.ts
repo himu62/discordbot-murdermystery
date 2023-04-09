@@ -1,19 +1,7 @@
-import {
-  CategoryChannel,
-  ChannelType,
-  Guild,
-  Role,
-  TextChannel,
-  VoiceChannel,
-} from "discord.js";
-import {
-  FILE,
-  noPermission,
-  readonlyPermission,
-  sendInfoToIndividualChannel,
-} from "../../src/util";
-import { readFileSync } from "node:fs";
-import { AScenario } from "../../src/module";
+import {CategoryChannel, ChannelType, Guild, Role, TextChannel, VoiceChannel,} from "discord.js";
+import {FILE, noPermission, readonlyPermission, sendInfoToIndividualChannel,} from "../../src/util";
+import {readFileSync} from "node:fs";
+import {AScenario} from "../../src/module";
 
 const file = FILE(__dirname);
 
@@ -46,7 +34,7 @@ export class Scenario extends AScenario {
   }
 
   static async init(guild: Guild, prefix: string): Promise<Scenario> {
-    const { category, roles, textChannels, voiceChannels, audienceRole } =
+    const {category, roles, textChannels, voiceChannels, audienceRole} =
       await super._init(guild, {
         scenarioName,
         shortName,
@@ -92,7 +80,7 @@ export class Scenario extends AScenario {
       characterNames,
       scenes,
       textChannelNames: [
-        "一般",
+        "連絡・雑談",
         "共通情報",
         "観戦",
         "解説",
@@ -178,6 +166,7 @@ export class Scenario extends AScenario {
     } else if (_scene === "解説") {
       const audienceRole = await this.getRole("観戦");
       const playersRole = await this.getRole("PL");
+      console.log(playersRole.members);
       await Promise.all(
         playersRole.members.map(async (member) => {
           return member.roles.add(audienceRole);
